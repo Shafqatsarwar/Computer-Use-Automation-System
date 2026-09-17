@@ -1,1 +1,6 @@
 {"event": "replay_start", "artifact_id": "checkout_backpack_v1", "version": 1, "target_app": "saucedemo", "params": {"username": "locked_out_user", "password": "****", "first_name": "Alex", "last_name": "Morgan", "postal_code": "94016"}, "timestamp": "2026-09-17T21:35:19.444780+00:00"}
+{"event": "step_executed", "step_id": "step_1_nav", "step_index": 1, "action": "navigate", "value": null, "url_after": "https://www.saucedemo.com/"}
+{"event": "step_executed", "step_id": "step_2_type_user", "step_index": 2, "action": "type", "value": "locked_out_user", "url_after": "https://www.saucedemo.com/"}
+{"event": "step_executed", "step_id": "step_3_type_pass", "step_index": 3, "action": "type", "value": "****", "url_after": "https://www.saucedemo.com/"}
+{"event": "step_executed", "step_id": "step_4_click_login", "step_index": 4, "action": "click", "value": null, "url_after": "https://www.saucedemo.com/"}
+{"event": "known_outcome_at_checkpoint", "classification": "business_outcome", "outcome_code": "USER_LOCKED_OUT", "message": "User account is locked out in the target system."}
