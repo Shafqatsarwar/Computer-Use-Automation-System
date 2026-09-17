@@ -1,0 +1,1 @@
+{"event": "replay_start", "artifact_id": "checkout_backpack_v1", "version": 1, "target_app": "saucedemo", "params": {"username": "locked_out_user", "password": "****", "first_name": "Alex", "last_name": "Morgan", "postal_code": "94016"}, "timestamp": "2026-09-17T21:35:19.444780+00:00"}

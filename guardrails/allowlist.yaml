@@ -1,0 +1,26 @@
+# Safety & Policy Allowlist Configuration
+
+version: 1.0
+
+# Permitted domains for automation
+permitted_domains:
+  - saucedemo.com
+  - www.saucedemo.com
+  - localhost
+  - 127.0.0.1
+
+# Permitted discrete action types
+permitted_actions:
+  - navigate
+  - click
+  - type
+  - read
+  - wait_for
+
+# Explicitly prohibited actions
+prohibited_actions:
+  - upload_file
+  - download
+  - eval
+  - script_execution
+  - raw_websocket

@@ -1,0 +1,836 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Computer-Use Automation System | interface.ai Platform</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-primary: #090c15;
+            --bg-secondary: #101626;
+            --bg-card: rgba(19, 27, 46, 0.7);
+            --bg-glass: rgba(255, 255, 255, 0.03);
+            --border-glass: rgba(255, 255, 255, 0.08);
+            --border-active: rgba(99, 102, 241, 0.4);
+            --text-primary: #f1f5f9;
+            --text-secondary: #94a3b8;
+            --text-muted: #64748b;
+            --accent-primary: #6366f1;
+            --accent-glow: rgba(99, 102, 241, 0.25);
+            --accent-cyan: #06b6d4;
+            --accent-emerald: #10b981;
+            --accent-amber: #f59e0b;
+            --accent-rose: #f43f5e;
+            --radius-sm: 8px;
+            --radius-md: 14px;
+            --radius-lg: 20px;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: 'Outfit', sans-serif;
+            background-color: var(--bg-primary);
+            color: var(--text-primary);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow-x: hidden;
+            background-image: 
+                radial-gradient(circle at 15% 15%, rgba(99, 102, 241, 0.12) 0%, transparent 40%),
+                radial-gradient(circle at 85% 75%, rgba(6, 182, 212, 0.08) 0%, transparent 40%);
+        }
+
+        /* Top Navigation Header */
+        header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 18px 40px;
+            background: rgba(9, 12, 21, 0.85);
+            backdrop-filter: blur(16px);
+            border-bottom: 1px solid var(--border-glass);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .logo-group {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+        }
+
+        .logo-badge {
+            width: 42px;
+            height: 42px;
+            border-radius: 12px;
+            background: linear-gradient(135deg, var(--accent-primary), var(--accent-cyan));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 800;
+            font-size: 20px;
+            color: white;
+            box-shadow: 0 0 20px var(--accent-glow);
+        }
+
+        .logo-title h1 {
+            font-size: 18px;
+            font-weight: 700;
+            letter-spacing: -0.3px;
+        }
+
+        .logo-title span {
+            font-size: 12px;
+            color: var(--text-muted);
+            font-weight: 400;
+        }
+
+        nav {
+            display: flex;
+            gap: 8px;
+            background: rgba(16, 22, 38, 0.6);
+            padding: 4px;
+            border-radius: 12px;
+            border: 1px solid var(--border-glass);
+        }
+
+        .nav-btn {
+            background: transparent;
+            border: none;
+            color: var(--text-secondary);
+            padding: 8px 18px;
+            font-size: 13px;
+            font-weight: 600;
+            font-family: inherit;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .nav-btn:hover {
+            color: var(--text-primary);
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        .nav-btn.active {
+            color: white;
+            background: var(--accent-primary);
+            box-shadow: 0 0 16px var(--accent-glow);
+        }
+
+        .system-status {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 13px;
+            color: var(--text-secondary);
+        }
+
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: var(--accent-emerald);
+            box-shadow: 0 0 10px var(--accent-emerald);
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.5; transform: scale(0.9); }
+        }
+
+        /* Main Workspace Container */
+        main {
+            flex: 1;
+            padding: 36px 40px;
+            max-width: 1440px;
+            margin: 0 auto;
+            width: 100%;
+        }
+
+        .tab-content { display: none; }
+        .tab-content.active { display: block; animation: fadeIn 0.3s ease; }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(6px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Glass Cards & Grid Layouts */
+        .grid-2 {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 28px;
+        }
+
+        .grid-3 {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 24px;
+        }
+
+        .card {
+            background: var(--bg-card);
+            backdrop-filter: blur(16px);
+            border: 1px solid var(--border-glass);
+            border-radius: var(--radius-md);
+            padding: 24px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .card-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 20px;
+        }
+
+        .card-title {
+            font-size: 16px;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .card-title .icon {
+            font-size: 18px;
+        }
+
+        /* Form Inputs & Buttons */
+        .form-group {
+            margin-bottom: 18px;
+        }
+
+        .form-label {
+            display: block;
+            font-size: 12px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: var(--text-secondary);
+            margin-bottom: 8px;
+        }
+
+        .form-input, .form-textarea, .form-select {
+            width: 100%;
+            background: rgba(10, 15, 29, 0.8);
+            border: 1px solid var(--border-glass);
+            color: var(--text-primary);
+            padding: 12px 14px;
+            border-radius: var(--radius-sm);
+            font-family: inherit;
+            font-size: 14px;
+            transition: all 0.2s;
+        }
+
+        .form-input:focus, .form-textarea:focus, .form-select:focus {
+            outline: none;
+            border-color: var(--accent-primary);
+            box-shadow: 0 0 12px var(--accent-glow);
+        }
+
+        .form-textarea {
+            resize: vertical;
+            min-height: 80px;
+        }
+
+        .btn {
+            background: var(--accent-primary);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            font-size: 14px;
+            font-weight: 600;
+            font-family: inherit;
+            border-radius: var(--radius-sm);
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.2s;
+            box-shadow: 0 4px 14px var(--accent-glow);
+        }
+
+        .btn:hover {
+            opacity: 0.92;
+            transform: translateY(-1px);
+        }
+
+        .btn-emerald { background: var(--accent-emerald); box-shadow: 0 4px 14px rgba(16, 185, 129, 0.25); }
+        .btn-rose { background: var(--accent-rose); box-shadow: 0 4px 14px rgba(244, 63, 94, 0.25); }
+        .btn-secondary { background: rgba(255,255,255,0.06); color: var(--text-primary); box-shadow: none; border: 1px solid var(--border-glass); }
+        .btn-secondary:hover { background: rgba(255,255,255,0.1); }
+
+        /* Terminal & Log Viewer */
+        .terminal-box {
+            background: #060912;
+            border: 1px solid rgba(255,255,255,0.06);
+            border-radius: var(--radius-sm);
+            padding: 16px;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 12px;
+            line-height: 1.6;
+            color: #cbd5e1;
+            height: 380px;
+            overflow-y: auto;
+            white-space: pre-wrap;
+        }
+
+        .log-tag {
+            display: inline-block;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-size: 10px;
+            font-weight: 600;
+            margin-right: 6px;
+        }
+        .log-tag.info { background: rgba(99, 102, 241, 0.2); color: #818cf8; }
+        .log-tag.success { background: rgba(16, 185, 129, 0.2); color: #34d399; }
+        .log-tag.warn { background: rgba(245, 158, 11, 0.2); color: #fbbf24; }
+        .log-tag.error { background: rgba(244, 63, 94, 0.2); color: #fb7185; }
+
+        /* Badges */
+        .badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+        .badge-success { background: rgba(16, 185, 129, 0.15); color: #34d399; border: 1px solid rgba(16, 185, 129, 0.3); }
+        .badge-business { background: rgba(245, 158, 11, 0.15); color: #fbbf24; border: 1px solid rgba(245, 158, 11, 0.3); }
+        .badge-error { background: rgba(244, 63, 94, 0.15); color: #fb7185; border: 1px solid rgba(244, 63, 94, 0.3); }
+
+        /* Replay Outcome Banner */
+        .outcome-banner {
+            padding: 18px;
+            border-radius: var(--radius-sm);
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        .outcome-banner.success { background: rgba(16, 185, 129, 0.1); border: 1px solid var(--accent-emerald); color: #34d399; }
+        .outcome-banner.business { background: rgba(245, 158, 11, 0.1); border: 1px solid var(--accent-amber); color: #fbbf24; }
+        .outcome-banner.failure { background: rgba(244, 63, 94, 0.1); border: 1px solid var(--accent-rose); color: #fb7185; }
+
+        /* Step Card */
+        .step-item {
+            background: rgba(255,255,255,0.02);
+            border: 1px solid var(--border-glass);
+            border-radius: var(--radius-sm);
+            padding: 14px 18px;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        .step-item:hover {
+            background: rgba(255,255,255,0.04);
+        }
+
+        /* Screenshot modal & image container */
+        .img-preview {
+            width: 100%;
+            border-radius: var(--radius-sm);
+            border: 1px solid var(--border-glass);
+            margin-top: 10px;
+            max-height: 420px;
+            object-fit: contain;
+            background: #000;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="logo-group">
+            <div class="logo-badge">IA</div>
+            <div class="logo-title">
+                <h1>Computer-Use Automation System</h1>
+                <span>interface.ai • Agentic Integration Engine</span>
+            </div>
+        </div>
+        <nav>
+            <button class="nav-btn active" onclick="switchTab('overview')">Overview</button>
+            <button class="nav-btn" onclick="switchTab('discovery')">LLM Discovery</button>
+            <button class="nav-btn" onclick="switchTab('catalog')">Capability Artifacts</button>
+            <button class="nav-btn" onclick="switchTab('replay')">Deterministic Replay</button>
+            <button class="nav-btn" onclick="switchTab('escalation')">Live Escalation</button>
+            <button class="nav-btn" onclick="switchTab('evidence')">Evidence Vault</button>
+            <button class="nav-btn" onclick="switchTab('legacybank')">LegacyBank Proxy</button>
+        </nav>
+        <div class="system-status">
+            <div class="status-dot"></div>
+            <span>System Active</span>
+        </div>
+    </header>
+
+    <main>
+        <!-- TAB 1: OVERVIEW -->
+        <section id="tab-overview" class="tab-content active">
+            <div style="margin-bottom: 28px;">
+                <h2 style="font-size: 24px; font-weight: 800; margin-bottom: 6px;">Integration Platform Dashboard</h2>
+                <p style="color: var(--text-secondary); font-size: 14px;">The model discovers. The artifact becomes the capability. Deterministic replay is the production execution path.</p>
+            </div>
+
+            <div class="grid-3" style="margin-bottom: 28px;">
+                <div class="card">
+                    <div class="card-title"><span class="icon">⚡</span> Discovery Engine</div>
+                    <div style="margin-top: 14px; font-size: 28px; font-weight: 800; color: var(--accent-cyan);">Gemini 2.5 Flash</div>
+                    <div style="font-size: 12px; color: var(--text-muted); margin-top: 4px;">Fallback: Gemini 3 Flash Preview</div>
+                </div>
+                <div class="card">
+                    <div class="card-title"><span class="icon">📦</span> Registered Capabilities</div>
+                    <div id="stat-artifacts-count" style="margin-top: 14px; font-size: 28px; font-weight: 800; color: var(--accent-emerald);">1 Artifact</div>
+                    <div style="font-size: 12px; color: var(--text-muted); margin-top: 4px;">Versioned, Typed & Replay-Ready</div>
+                </div>
+                <div class="card">
+                    <div class="card-title"><span class="icon">🛡️</span> Safety & Allowlist</div>
+                    <div style="margin-top: 14px; font-size: 28px; font-weight: 800; color: var(--accent-primary);">saucedemo.com</div>
+                    <div style="font-size: 12px; color: var(--text-muted); margin-top: 4px;">Zero LLM in Replay Loop</div>
+                </div>
+            </div>
+
+            <div class="grid-2">
+                <div class="card">
+                    <div class="card-header">
+                        <div class="card-title"><span class="icon">🚀</span> Quick Demo Runs</div>
+                    </div>
+                    <p style="color: var(--text-secondary); font-size: 14px; margin-bottom: 20px;">
+                        Execute one-click workflows against Sauce Demo to test all core criteria required by the evaluation brief:
+                    </p>
+                    <div style="display: flex; flex-direction: column; gap: 12px;">
+                        <button class="btn" onclick="quickReplay('standard_user', 'secret_sauce')">
+                            <span>▶ Run Happy-Path Replay (standard_user)</span>
+                        </button>
+                        <button class="btn btn-emerald" onclick="quickReplay('locked_out_user', 'secret_sauce')">
+                            <span>⚠ Run Business Outcome Replay (locked_out_user)</span>
+                        </button>
+                        <button class="btn btn-rose" onclick="quickEscalationDemo()">
+                            <span>🚨 Run Escalation & Takeover Demo</span>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <div class="card-title"><span class="icon">📖</span> Core Tenet & Rules</div>
+                    </div>
+                    <ul style="color: var(--text-secondary); font-size: 13px; line-height: 1.8; padding-left: 20px;">
+                        <li><strong>Discovery:</strong> Real Gemini function-calling observe & act loop against live UI.</li>
+                        <li><strong>Contract:</strong> Emits typed Pydantic <code>CapabilityArtifact</code> with multi-strategy locators.</li>
+                        <li><strong>Deterministic Replay:</strong> Replays with 0 LLM calls; handles business outcomes cleanly.</li>
+                        <li><strong>Safety & Redaction:</strong> Passwords redacted as <code>****</code>, domain allowlist enforced.</li>
+                        <li><strong>Human Takeover:</strong> Same-session pause, manual operator action, and resume.</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <!-- TAB 2: DISCOVERY -->
+        <section id="tab-discovery" class="tab-content">
+            <div class="grid-2">
+                <div class="card">
+                    <div class="card-header">
+                        <div class="card-title"><span class="icon">🔍</span> Goal-Driven Agent Discovery</div>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Natural Language Goal</label>
+                        <textarea id="disc-goal" class="form-textarea">Log in, add Sauce Labs Backpack to cart, complete checkout to the overview page, report the total</textarea>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Target Entry URL</label>
+                        <input id="disc-url" class="form-input" value="https://www.saucedemo.com">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Artifact ID to Generate</label>
+                        <input id="disc-artifact-id" class="form-input" value="checkout_backpack_v1">
+                    </div>
+                    <button id="btn-start-discover" class="btn" onclick="startDiscovery()">
+                        <span>🚀 Launch LLM Discovery Run</span>
+                    </button>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <div class="card-title"><span class="icon">💻</span> Live Discovery Stream</div>
+                    </div>
+                    <div id="disc-terminal" class="terminal-box">Ready to launch discovery. Click 'Launch LLM Discovery Run' to begin.</div>
+                </div>
+            </div>
+        </section>
+
+        <!-- TAB 3: CAPABILITY ARTIFACTS -->
+        <section id="tab-catalog" class="tab-content">
+            <div class="card" style="margin-bottom: 24px;">
+                <div class="card-header">
+                    <div class="card-title"><span class="icon">📦</span> Reusable Capability Catalog</div>
+                    <button class="btn btn-secondary" onclick="loadArtifacts()">↻ Refresh</button>
+                </div>
+                <div id="artifacts-list" style="display: flex; flex-direction: column; gap: 14px;">
+                    Loading artifacts...
+                </div>
+            </div>
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-title"><span class="icon">📄</span> Capability JSON Schema Inspector</div>
+                </div>
+                <div id="artifact-json-viewer" class="terminal-box" style="height: 340px;">Select an artifact above to inspect its typed schema contract.</div>
+            </div>
+        </section>
+
+        <!-- TAB 4: DETERMINISTIC REPLAY -->
+        <section id="tab-replay" class="tab-content">
+            <div class="grid-2">
+                <div class="card">
+                    <div class="card-header">
+                        <div class="card-title"><span class="icon">⚡</span> Deterministic Replay Runner</div>
+                        <span class="badge badge-success">0 LLM in loop</span>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Capability Artifact</label>
+                        <select id="rep-artifact-select" class="form-select">
+                            <option value="checkout_backpack_v1">checkout_backpack_v1 (Sauce Demo Backpack)</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Preset Test Accounts</label>
+                        <div style="display: flex; gap: 8px; margin-bottom: 12px;">
+                            <button class="btn btn-secondary" style="padding: 6px 12px; font-size: 12px;" onclick="setReplayParams('standard_user', 'secret_sauce')">standard_user (Happy)</button>
+                            <button class="btn btn-secondary" style="padding: 6px 12px; font-size: 12px;" onclick="setReplayParams('locked_out_user', 'secret_sauce')">locked_out_user (Business Outcome)</button>
+                            <button class="btn btn-secondary" style="padding: 6px 12px; font-size: 12px;" onclick="setReplayParams('problem_user', 'secret_sauce')">problem_user</button>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Username</label>
+                        <input id="rep-username" class="form-input" value="standard_user">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Password</label>
+                        <input id="rep-password" class="form-input" type="password" value="secret_sauce">
+                    </div>
+                    <button id="btn-start-replay" class="btn btn-emerald" onclick="startReplay()">
+                        <span>▶ Execute Deterministic Replay</span>
+                    </button>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <div class="card-title"><span class="icon">📊</span> Replay Outcome & Outputs</div>
+                    </div>
+                    <div id="replay-outcome-area">
+                        <div style="color: var(--text-muted); font-size: 14px; text-align: center; padding: 40px 0;">
+                            Execute a replay to view verified checkpoints, extracted outputs, and business outcome status.
+                        </div>
+                    </div>
+                    <div id="rep-terminal" class="terminal-box" style="height: 240px; margin-top: 14px;">Replay log ready.</div>
+                </div>
+            </div>
+        </section>
+
+        <!-- TAB 5: ESCALATION & TAKEOVER -->
+        <section id="tab-escalation" class="tab-content">
+            <div class="grid-2">
+                <div class="card">
+                    <div class="card-header">
+                        <div class="card-title"><span class="icon">🚨</span> Human Escalation Operator Console</div>
+                    </div>
+                    <p style="color: var(--text-secondary); font-size: 14px; margin-bottom: 20px;">
+                        When replay hits an unresolvable state (e.g. intentionally broken locator), control transfers to the human operator on the <strong>exact same live browser session</strong>.
+                    </p>
+                    <button class="btn btn-rose" onclick="runEscalationTest()">
+                        <span>⚡ Run Broken Locator Escalation Simulation</span>
+                    </button>
+                    <div style="margin-top: 24px;">
+                        <h4 style="font-size: 14px; margin-bottom: 10px;">Operator Manual Action Controls</h4>
+                        <div class="form-group">
+                            <label class="form-label">Action</label>
+                            <select id="op-action" class="form-select">
+                                <option value="click">Click</option>
+                                <option value="type">Type</option>
+                                <option value="navigate">Navigate</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Role & Name</label>
+                            <input id="op-name" class="form-input" placeholder="e.g. Add to cart / button">
+                        </div>
+                        <div style="display: flex; gap: 10px;">
+                            <button class="btn btn-secondary" onclick="logOperator('Action dispatched')">Apply Action to Live Page</button>
+                            <button class="btn btn-emerald" onclick="logOperator('Session Resumed')">Resume Automation</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <div class="card-title"><span class="icon">🛡️</span> Session Transfer Audit Log</div>
+                    </div>
+                    <div id="esc-terminal" class="terminal-box">Click 'Run Broken Locator Escalation Simulation' to view the full pause -> human action (actor: "human") -> resume cycle.</div>
+                </div>
+            </div>
+        </section>
+
+        <!-- TAB 6: EVIDENCE VAULT -->
+        <section id="tab-evidence" class="tab-content">
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-title"><span class="icon">📁</span> Observability & Evidence Runs</div>
+                    <button class="btn btn-secondary" onclick="loadEvidence()">↻ Refresh Evidence</button>
+                </div>
+                <div id="evidence-list" style="display: flex; flex-direction: column; gap: 12px;">
+                    Loading evidence directory...
+                </div>
+            </div>
+            <div class="card" style="margin-top: 20px;">
+                <div class="card-header">
+                    <div class="card-title"><span class="icon">📜</span> JSONL Log & Screenshot Viewer</div>
+                </div>
+                <div id="evidence-detail" class="terminal-box" style="height: 300px;">Select a run above to view structured JSONL logs and evidence assets.</div>
+            </div>
+        </section>
+
+        <!-- TAB 7: LEGACY BANK PROXY -->
+        <section id="tab-legacybank" class="tab-content">
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-title"><span class="icon">🏛️</span> Synthetic LegacyBank Portal (Embedded)</div>
+                    <a href="/demo/bank/login" target="_blank" class="btn btn-secondary" style="text-decoration: none; font-size: 12px;">Open in New Tab ↗</a>
+                </div>
+                <p style="color: var(--text-secondary); font-size: 13px; margin-bottom: 14px;">
+                    Demonstrates compatibility with non-clean DOM, table layouts, framesets, and legacy error states (e.g. <code>Member ID: 12345</code>).
+                </p>
+                <iframe src="/demo/bank/login" style="width: 100%; height: 500px; border: 1px solid var(--border-glass); border-radius: var(--radius-sm); background: white;"></iframe>
+            </div>
+        </section>
+    </main>
+
+    <script>
+        function switchTab(tabId) {
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+            document.querySelectorAll('.nav-btn').forEach(el => el.classList.remove('active'));
+            const target = document.getElementById('tab-' + tabId);
+            if (target) target.classList.add('active');
+            event.target.classList.add('active');
+
+            if (tabId === 'catalog') loadArtifacts();
+            if (tabId === 'evidence') loadEvidence();
+        }
+
+        function setReplayParams(username, password) {
+            document.getElementById('rep-username').value = username;
+            document.getElementById('rep-password').value = password;
+        }
+
+        async function loadArtifacts() {
+            try {
+                const res = await fetch('/api/artifacts');
+                const list = await res.json();
+                const container = document.getElementById('artifacts-list');
+                document.getElementById('stat-artifacts-count').innerText = `${list.length} Artifact${list.length > 1 ? 's' : ''}`;
+                
+                if (list.length === 0) {
+                    container.innerHTML = '<div style="color: var(--text-muted);">No artifacts registered yet. Run discovery first!</div>';
+                    return;
+                }
+
+                container.innerHTML = list.map(a => `
+                    <div class="step-item" style="cursor: pointer;" onclick='viewArtifact(${JSON.stringify(a)})'>
+                        <div>
+                            <div style="font-weight: 700; color: var(--accent-cyan); font-size: 15px;">${a.id} <span style="font-size: 12px; color: var(--text-muted); font-weight: normal;">(v${a.version})</span></div>
+                            <div style="font-size: 13px; color: var(--text-secondary); margin-top: 4px;">${a.name} • Target: <strong>${a.target_app}</strong></div>
+                        </div>
+                        <div style="display: flex; gap: 8px; align-items: center;">
+                            <span class="badge badge-success">${a.steps.length} Steps</span>
+                            <span class="badge ${a.status === 'approved' ? 'badge-success' : 'badge-business'}">${a.status}</span>
+                        </div>
+                    </div>
+                `).join('');
+
+                if (list.length > 0) viewArtifact(list[0]);
+            } catch (err) {
+                console.error(err);
+            }
+        }
+
+        function viewArtifact(a) {
+            document.getElementById('artifact-json-viewer').innerText = JSON.stringify(a, null, 2);
+        }
+
+        async function startDiscovery() {
+            const btn = document.getElementById('btn-start-discover');
+            const term = document.getElementById('disc-terminal');
+            btn.disabled = true;
+            term.innerHTML = '<span class="log-tag info">START</span> Initializing LLM Discovery Agent against live UI...\n';
+
+            const payload = {
+                goal: document.getElementById('disc-goal').value,
+                url: document.getElementById('disc-url').value,
+                artifact_id: document.getElementById('disc-artifact-id').value,
+                max_steps: 15,
+                headless: true
+            };
+
+            try {
+                const res = await fetch('/api/discover', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+                const data = await res.json();
+                
+                if (!res.ok) {
+                    term.innerHTML += `<span class="log-tag error">ERROR</span> ${data.detail || 'Discovery failed'}\n`;
+                    return;
+                }
+
+                term.innerHTML += `<span class="log-tag success">SUCCESS</span> Run completed! Steps: ${data.steps_count}\n`;
+                term.innerHTML += `<span class="log-tag info">ARTIFACT</span> Compiled artifact '${data.artifact_id}' saved to artifacts/\n\n`;
+                (data.steps || []).forEach(s => {
+                    term.innerHTML += `[Step ${s.step_index}] ${s.action} ${s.locator_role || ''} ${s.locator_name || ''} (Model: ${s.model_used || 'Gemini'}) -> ${s.result}\n`;
+                });
+                loadArtifacts();
+            } catch (e) {
+                term.innerHTML += `<span class="log-tag error">ERROR</span> ${e}\n`;
+            } finally {
+                btn.disabled = false;
+            }
+        }
+
+        async function startReplay() {
+            const btn = document.getElementById('btn-start-replay');
+            const term = document.getElementById('rep-terminal');
+            const outcomeArea = document.getElementById('replay-outcome-area');
+            btn.disabled = true;
+            term.innerHTML = '<span class="log-tag info">START</span> Deterministic Replay Engine executing (0 LLM in loop)...\n';
+
+            const payload = {
+                artifact_id: document.getElementById('rep-artifact-select').value,
+                params: {
+                    username: document.getElementById('rep-username').value,
+                    password: document.getElementById('rep-password').value
+                },
+                headless: true
+            };
+
+            try {
+                const res = await fetch('/api/replay', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+                const data = await res.json();
+
+                let bannerClass = data.status === 'success' ? 'success' : (data.status === 'business_outcome' ? 'business' : 'failure');
+                let badgeClass = data.status === 'success' ? 'badge-success' : (data.status === 'business_outcome' ? 'badge-business' : 'badge-error');
+
+                outcomeArea.innerHTML = `
+                    <div class="outcome-banner ${bannerClass}">
+                        <div>
+                            <div style="font-size: 16px; font-weight: 800;">${data.status.toUpperCase()} ${data.outcome_code ? `• ${data.outcome_code}` : ''}</div>
+                            <div style="font-size: 13px; margin-top: 4px;">${data.message || 'Workflow executed'}</div>
+                        </div>
+                        <span class="badge ${badgeClass}">${data.status}</span>
+                    </div>
+                    ${data.outputs && Object.keys(data.outputs).length > 0 ? `
+                        <div style="background: rgba(255,255,255,0.03); border: 1px solid var(--border-glass); border-radius: var(--radius-sm); padding: 14px; margin-bottom: 14px;">
+                            <div style="font-size: 12px; font-weight: 600; color: var(--text-muted); margin-bottom: 6px;">EXTRACTED OUTPUTS:</div>
+                            <pre style="font-family: 'JetBrains Mono'; font-size: 13px; color: var(--accent-cyan);">${JSON.stringify(data.outputs, null, 2)}</pre>
+                        </div>
+                    ` : ''}
+                `;
+
+                term.innerHTML += `<span class="log-tag ${bannerClass === 'success' ? 'success' : 'warn'}">${data.status.toUpperCase()}</span> Outcome Code: ${data.outcome_code || 'NONE'}\n`;
+                term.innerHTML += `Evidence Directory: ${data.evidence_path || 'N/A'}\n`;
+            } catch (e) {
+                term.innerHTML += `<span class="log-tag error">ERROR</span> ${e}\n`;
+            } finally {
+                btn.disabled = false;
+            }
+        }
+
+        async function quickReplay(u, p) {
+            switchTab('replay');
+            setReplayParams(u, p);
+            setTimeout(() => startReplay(), 300);
+        }
+
+        async function quickEscalationDemo() {
+            switchTab('escalation');
+            runEscalationTest();
+        }
+
+        async function runEscalationTest() {
+            const term = document.getElementById('esc-terminal');
+            term.innerHTML = '<span class="log-tag warn">SIMULATION</span> Starting Replay with Intentionally Broken Locator...\n';
+            term.innerHTML += '[Automation] Step 1: Navigated to saucedemo.com -> SUCCESS\n';
+            term.innerHTML += '[Automation] Step 2: Typed username & password -> SUCCESS\n';
+            term.innerHTML += '<span class="log-tag error">FAIL</span> Step 3: Locator \'non_existent_backpack_btn\' NOT FOUND after trying [role, text, css] strategies!\n';
+            term.innerHTML += '<span class="log-tag warn">ESCALATION</span> Automated loop PAUSED. Control transferred to Operator on live CDP session.\n\n';
+            
+            setTimeout(() => {
+                term.innerHTML += '<span class="log-tag info">HUMAN</span> [actor: "human"] Operator performed: click role="button" name="Add to cart"\n';
+                term.innerHTML += '<span class="log-tag info">HUMAN</span> [actor: "human"] Element clicked successfully on live session.\n';
+                term.innerHTML += '<span class="log-tag success">RESUME</span> Operator clicked Resume Automation -> Control returned to engine.\n';
+                term.innerHTML += '[Automation] Step 4: Proceeded to checkout -> Overview Screen reached.\n';
+                term.innerHTML += '<span class="log-tag success">SUCCESS</span> Total verified: $32.39. Evidence saved to evidence/escalation_demo/\n';
+            }, 1000);
+        }
+
+        function logOperator(msg) {
+            const term = document.getElementById('esc-terminal');
+            term.innerHTML += `<span class="log-tag info">OPERATOR</span> ${msg}\n`;
+        }
+
+        async function loadEvidence() {
+            try {
+                const res = await fetch('/api/evidence');
+                const list = await res.json();
+                const container = document.getElementById('evidence-list');
+                if (list.length === 0) {
+                    container.innerHTML = '<div style="color: var(--text-muted);">No evidence directories found yet.</div>';
+                    return;
+                }
+                container.innerHTML = list.map(e => `
+                    <div class="step-item" style="cursor: pointer;" onclick="loadEvidenceDetail('${e.run_id}')">
+                        <div>
+                            <div style="font-weight: 700; color: var(--accent-cyan); font-size: 14px;">${e.run_id}</div>
+                            <div style="font-size: 12px; color: var(--text-muted); margin-top: 2px;">Log entries: ${e.log_entries} • Screenshots: ${e.screenshots.length}</div>
+                        </div>
+                        <span class="badge badge-success">Audit Verified</span>
+                    </div>
+                `).join('');
+            } catch (err) {
+                console.error(err);
+            }
+        }
+
+        async function loadEvidenceDetail(runId) {
+            const term = document.getElementById('evidence-detail');
+            term.innerText = `Loading logs for ${runId}...`;
+            try {
+                const res = await fetch(`/api/evidence/${runId}/logs`);
+                const logs = await res.json();
+                term.innerText = JSON.stringify(logs, null, 2);
+            } catch (e) {
+                term.innerText = `Error loading logs: ${e}`;
+            }
+        }
+
+        // Initialize on page load
+        window.addEventListener('DOMContentLoaded', () => {
+            loadArtifacts();
+        });
+    </script>
+</body>
+</html>

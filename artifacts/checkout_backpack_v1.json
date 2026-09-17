@@ -1,0 +1,316 @@
+{
+  "id": "checkout_backpack_v1",
+  "version": 1,
+  "name": "Sauce Demo Backpack Checkout",
+  "description": "Logs into Sauce Demo, adds the Sauce Labs Backpack to the cart, proceeds through checkout with shipping info, and asserts order review screen total.",
+  "target_app": "saucedemo",
+  "entry_url": "https://www.saucedemo.com",
+  "input_params": [
+    {
+      "name": "username",
+      "type": "string",
+      "required": true,
+      "secret": false,
+      "description": "Sauce Demo login username",
+      "default": "standard_user"
+    },
+    {
+      "name": "password",
+      "type": "string",
+      "required": true,
+      "secret": true,
+      "description": "Sauce Demo login password",
+      "default": "secret_sauce"
+    },
+    {
+      "name": "first_name",
+      "type": "string",
+      "required": false,
+      "secret": false,
+      "description": "Shipping first name",
+      "default": "Alex"
+    },
+    {
+      "name": "last_name",
+      "type": "string",
+      "required": false,
+      "secret": false,
+      "description": "Shipping last name",
+      "default": "Morgan"
+    },
+    {
+      "name": "postal_code",
+      "type": "string",
+      "required": false,
+      "secret": false,
+      "description": "Shipping postal code",
+      "default": "94016"
+    }
+  ],
+  "steps": [
+    {
+      "id": "step_1_nav",
+      "action": "navigate",
+      "locator": null,
+      "value_param": null,
+      "risk": "safe",
+      "checkpoint": "url_contains:saucedemo.com"
+    },
+    {
+      "id": "step_2_type_user",
+      "action": "type",
+      "locator": {
+        "strategy": "role",
+        "role": "textbox",
+        "name": "Username",
+        "fallback": {
+          "strategy": "text",
+          "name": "Username",
+          "fallback": {
+            "strategy": "css",
+            "css": "[data-test='username']"
+          }
+        }
+      },
+      "value_param": "username",
+      "risk": "safe",
+      "checkpoint": null
+    },
+    {
+      "id": "step_3_type_pass",
+      "action": "type",
+      "locator": {
+        "strategy": "role",
+        "role": "textbox",
+        "name": "Password",
+        "fallback": {
+          "strategy": "text",
+          "name": "Password",
+          "fallback": {
+            "strategy": "css",
+            "css": "[data-test='password']"
+          }
+        }
+      },
+      "value_param": "password",
+      "risk": "safe",
+      "checkpoint": null
+    },
+    {
+      "id": "step_4_click_login",
+      "action": "click",
+      "locator": {
+        "strategy": "role",
+        "role": "button",
+        "name": "Login",
+        "fallback": {
+          "strategy": "text",
+          "name": "Login",
+          "fallback": {
+            "strategy": "css",
+            "css": "[data-test='login-button']"
+          }
+        }
+      },
+      "value_param": null,
+      "risk": "reversible",
+      "checkpoint": "url_contains:/inventory.html"
+    },
+    {
+      "id": "step_5_add_backpack",
+      "action": "click",
+      "locator": {
+        "strategy": "role",
+        "role": "button",
+        "name": "Add to cart",
+        "fallback": {
+          "strategy": "text",
+          "name": "Add to cart",
+          "fallback": {
+            "strategy": "css",
+            "css": "[data-test='add-to-cart-sauce-labs-backpack']"
+          }
+        }
+      },
+      "value_param": null,
+      "risk": "reversible",
+      "checkpoint": "text_visible:Remove"
+    },
+    {
+      "id": "step_6_open_cart",
+      "action": "click",
+      "locator": {
+        "strategy": "role",
+        "role": "link",
+        "name": "1",
+        "fallback": {
+          "strategy": "css",
+          "css": ".shopping_cart_link",
+          "fallback": {
+            "strategy": "text",
+            "name": "Your Cart"
+          }
+        }
+      },
+      "value_param": null,
+      "risk": "safe",
+      "checkpoint": "url_contains:/cart.html"
+    },
+    {
+      "id": "step_7_click_checkout",
+      "action": "click",
+      "locator": {
+        "strategy": "role",
+        "role": "button",
+        "name": "Checkout",
+        "fallback": {
+          "strategy": "text",
+          "name": "Checkout",
+          "fallback": {
+            "strategy": "css",
+            "css": "[data-test='checkout']"
+          }
+        }
+      },
+      "value_param": null,
+      "risk": "reversible",
+      "checkpoint": "url_contains:/checkout-step-one.html"
+    },
+    {
+      "id": "step_8_type_fname",
+      "action": "type",
+      "locator": {
+        "strategy": "role",
+        "role": "textbox",
+        "name": "First Name",
+        "fallback": {
+          "strategy": "text",
+          "name": "First Name",
+          "fallback": {
+            "strategy": "css",
+            "css": "[data-test='firstName']"
+          }
+        }
+      },
+      "value_param": "first_name",
+      "risk": "safe",
+      "checkpoint": null
+    },
+    {
+      "id": "step_9_type_lname",
+      "action": "type",
+      "locator": {
+        "strategy": "role",
+        "role": "textbox",
+        "name": "Last Name",
+        "fallback": {
+          "strategy": "text",
+          "name": "Last Name",
+          "fallback": {
+            "strategy": "css",
+            "css": "[data-test='lastName']"
+          }
+        }
+      },
+      "value_param": "last_name",
+      "risk": "safe",
+      "checkpoint": null
+    },
+    {
+      "id": "step_10_type_zip",
+      "action": "type",
+      "locator": {
+        "strategy": "role",
+        "role": "textbox",
+        "name": "Zip/Postal Code",
+        "fallback": {
+          "strategy": "text",
+          "name": "Zip/Postal Code",
+          "fallback": {
+            "strategy": "css",
+            "css": "[data-test='postalCode']"
+          }
+        }
+      },
+      "value_param": "postal_code",
+      "risk": "safe",
+      "checkpoint": null
+    },
+    {
+      "id": "step_11_click_continue",
+      "action": "click",
+      "locator": {
+        "strategy": "role",
+        "role": "button",
+        "name": "Continue",
+        "fallback": {
+          "strategy": "text",
+          "name": "Continue",
+          "fallback": {
+            "strategy": "css",
+            "css": "[data-test='continue']"
+          }
+        }
+      },
+      "value_param": null,
+      "risk": "reversible",
+      "checkpoint": "url_contains:/checkout-step-two.html"
+    }
+  ],
+  "outputs": [
+    {
+      "name": "item_total",
+      "type": "string",
+      "extract_from": {
+        "strategy": "css",
+        "css": ".summary_subtotal_label"
+      }
+    },
+    {
+      "name": "tax",
+      "type": "string",
+      "extract_from": {
+        "strategy": "css",
+        "css": ".summary_tax_label"
+      }
+    },
+    {
+      "name": "total",
+      "type": "string",
+      "extract_from": {
+        "strategy": "css",
+        "css": ".summary_total_label"
+      }
+    }
+  ],
+  "success_checkpoint": "url_contains:/checkout-step-two.html",
+  "known_outcomes": [
+    {
+      "match": "text_contains:Epic sadface: Sorry, this user has been locked out.",
+      "classification": "business_outcome",
+      "outcome_code": "USER_LOCKED_OUT",
+      "message": "User account is locked out in the target system."
+    },
+    {
+      "match": "text_contains:Epic sadface: Username is required",
+      "classification": "business_outcome",
+      "outcome_code": "VALIDATION_ERROR_USERNAME",
+      "message": "Username field was left empty or missing."
+    },
+    {
+      "match": "text_contains:Epic sadface: Password is required",
+      "classification": "business_outcome",
+      "outcome_code": "VALIDATION_ERROR_PASSWORD",
+      "message": "Password field was left empty or missing."
+    },
+    {
+      "match": "text_contains:Epic sadface: Username and password do not match any user in this service",
+      "classification": "business_outcome",
+      "outcome_code": "INVALID_CREDENTIALS",
+      "message": "The username or password supplied was invalid."
+    }
+  ],
+  "created_from_run_id": "discovery_initial_saucedemo_backpack",
+  "created_at": "2026-09-17T21:00:00Z",
+  "status": "approved"
+}
