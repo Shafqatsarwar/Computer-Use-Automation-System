@@ -1,32 +1,41 @@
 # Computer-Use Automation System
 
 > **interface.ai Engineering Take-Home Challenge**  
-> An agentic computer-use and deterministic replay integration platform for legacy enterprise and financial software without APIs.
+> A deterministic browser-automation capability platform with optional Gemini-assisted discovery.
 
 ---
 
 ## 1. System Overview
 
-The **Computer-Use Automation System** solves the core challenge of integrating with legacy enterprise applications (core banking screens, servicing tools, admin consoles) that lack APIs.
+The system turns a browser workflow into a typed, reusable capability. The primary production path is deterministic replay of a saved artifact. Gemini is a secondary tool used only for initial discovery or optional verification; it is never part of the replay decision loop.
 
 ```text
-Natural-Language Goal
+Saved Capability Artifact
         ↓
-Real LLM Discovery Agent (Gemini 2.5 Flash / Gemini 3 Flash)
-        ↓
-Live Browser Automation (Playwright via A11y Tree + Role/Name perception)
-        ↓
-Typed, Parameterized Capability Artifact (Pydantic v2 Schema)
-        ↓
-Deterministic Replay Engine (ZERO LLM in loop, Sub-second, Robust Fallbacks)
+Deterministic Replay Engine (PRIMARY, ZERO LLM/API in loop)
         ↓
 Outcome & Error Taxonomy (Business Outcomes vs. Recoverable vs. Hard Failures)
         ↓
-Human-in-the-Loop Escalation (Live CDP Session Transfer, Pause & Resume)
+Human-in-the-Loop Escalation (Live Session Transfer, Pause & Resume)
+
+Optional secondary path:
+Natural-Language Goal → Gemini Discovery → Typed Capability Artifact
 ```
 
 ### Central Philosophy
 > **The model discovers. The artifact becomes the capability. Deterministic replay is the production execution path.**
+
+### Primary and secondary responsibilities
+
+| Area | Primary behavior | External API required? |
+|---|---|---:|
+| Deterministic replay | Executes saved artifacts, checks locators/checkpoints, extracts outputs | No |
+| Business outcomes | Returns structured results such as `USER_LOCKED_OUT` | No |
+| Safety guardrails | Enforces domains, actions, risk policy, and redaction | No |
+| Human escalation | Pauses, records operator actions, and resumes the same session | No |
+| Capability catalog | Loads and validates local JSON artifacts | No |
+| Gemini discovery | Creates a new artifact from a natural-language goal | Yes, optional |
+| AI verification | Optional secondary investigation from the dashboard | Yes, optional |
 
 ---
 
@@ -49,44 +58,52 @@ pip install -r requirements.txt
 # 3. Install Playwright browser engine
 python -m playwright install chromium
 
-# 4. Configure environment
-cp .env.example .env
-# Edit .env and set your GEMINI_API_KEY (from Google AI Studio: https://aistudio.google.com/)
+# 4. Optional: configure Gemini only if you will run discovery or AI verification
+# PowerShell:
+Copy-Item .env.example .env
+# Then edit .env and set GEMINI_API_KEY.
+# Replay, tests, the catalog, escalation, and the dashboard do not need this key.
 ```
 
 ### Running Offline / Without Live API
-The deterministic replay engine and test suite do not require Gemini API access:
+The primary workflow is API-free. The deterministic replay engine, dashboard, artifact catalog, escalation flow, and test suite do not require Gemini API access:
 ```bash
-# Run full unit & integration test suite (15 tests)
+# Run the full unit and integration test suite
 pytest tests/ -v
+
+# Run a saved capability without Gemini
+python -m src.cli replay --artifact checkout_backpack_v1 --params username=standard_user password=secret_sauce
 ```
+
+The password is supplied at runtime and is not stored in the capability artifact.
 
 ---
 
 ## 3. Demo Path (CLI Commands)
 
-### A. Run LLM Discovery (Real Gemini API Call against Live UI)
-```bash
-python -m src.cli discover --goal "Log in, add Sauce Labs Backpack to cart, complete checkout to the overview page, report the total" --url https://www.saucedemo.com
-```
-
-### B. Happy-Path Deterministic Replay (Zero LLM)
+### A. Primary path: deterministic replay (no API)
 ```bash
 python -m src.cli replay --artifact checkout_backpack_v1 --params username=standard_user password=secret_sauce
 ```
-*Expected Output:* Status `SUCCESS`, verified checkpoints, extracted outputs (`item_total`, `tax`, `total`).
+*Expected Output:* `SUCCESS`, verified checkpoints, and extracted `item_total`, `tax`, and `total` values.
 
-### C. Business Outcome Replay (`locked_out_user`)
+### B. Business outcome verification (no API)
 ```bash
 python -m src.cli replay --artifact checkout_backpack_v1 --params username=locked_out_user password=secret_sauce
 ```
-*Expected Output:* Status `BUSINESS_OUTCOME`, outcome code `USER_LOCKED_OUT` (handled cleanly as an expected business state without crashing).
+*Expected Output:* `BUSINESS_OUTCOME` with `USER_LOCKED_OUT`, not an exception.
 
-### D. Human Escalation & Live Session Takeover Demo
+### C. Human escalation verification (no API)
 ```bash
 python -m src.cli escalate-test
 ```
-*Expected Output:* Automation pauses upon encountering an unresolvable locator, operator console executes manual action on the live browser session (`actor: "human"`), and automation resumes to completion.
+*Expected Output:* A broken locator pauses the live session, a human action is recorded, and the workflow resumes.
+
+### D. Secondary path: Gemini discovery (optional)
+```bash
+python -m src.cli discover --goal "Log in, add Sauce Labs Backpack to cart, complete checkout to the overview page, report the total" --url https://www.saucedemo.com
+```
+This is the only command in the standard workflow that requires `GEMINI_API_KEY`. It makes real Gemini calls against the live UI and records `model_used` in the discovery transcript. A quota or API failure affects discovery only; it does not affect replay of an existing artifact.
 
 ---
 
@@ -97,12 +114,12 @@ Launch the full interactive single-page dashboard:
 python -m src.cli serve --port 3000
 ```
 Open **[http://localhost:3000](http://localhost:3000)** in your browser:
-- **Discovery Studio:** Interactive goal launcher and live LLM step tracer.
+- **Deterministic Replay Runner:** Primary manual workflow; executes saved artifacts without Gemini.
 - **Capability Catalog:** Visual inspector for registered capability schemas and locator chains.
-- **Deterministic Replay Runner:** One-click execution with test account selector (`standard_user`, `locked_out_user`, `problem_user`).
 - **Live Escalation Console:** Real-time session takeover and control handoff.
 - **Evidence Vault:** Browse JSONL audit logs and captured screenshots.
 - **LegacyBank Proxy:** Embedded legacy banking application with non-clean DOM and table layouts (`/demo/bank/login`).
+- **AI Verification:** Fixed secondary utility button for optional Gemini discovery and verification. It is intentionally outside the primary navbar.
 
 ---
 
@@ -117,12 +134,12 @@ Open **[http://localhost:3000](http://localhost:3000)** in your browser:
 ├── guardrails/
 │   └── allowlist.yaml      # Permitted domains and actions
 ├── src/
-│   ├── agent/              # LLM Discovery Loop (Gemini 2.5 Flash + fallback)
+│   ├── agent/              # Optional LLM Discovery Loop (Gemini + fallback)
 │   ├── artifact/           # Pydantic v2 Capability Artifact Schema & Recorder
 │   ├── escalation/         # Live session handoff & operator CLI
 │   ├── evidence/           # Structured JSONL logger with secret redaction
 │   ├── guardrails/         # Allowlist, risk policy, secret & PII redactor
-│   ├── replay/             # Deterministic Replay Engine (NO LLM)
+│   ├── replay/             # PRIMARY deterministic Replay Engine (NO LLM/API)
 │   ├── web/                # FastAPI backend & Glassmorphic SPA (Port 3000)
 │   └── cli.py              # CLI entry point
 ├── tests/                  # Pytest unit & integration test suite
@@ -138,3 +155,17 @@ Open **[http://localhost:3000](http://localhost:3000)** in your browser:
 1. **Allowlist Policy:** Strict enforcement before every browser action; blocks unauthorized navigation and unpermitted actions (`eval`, `upload`, `download`).
 2. **Secret Redaction:** All sensitive fields (`password`, API keys, tokens) are redacted as `****` at ingestion time and never persisted to logs or capability steps.
 3. **Risk Gating:** Irreversible actions (`submit`, `pay`, `confirm`) on `draft` artifacts require human operator authorization.
+4. **LLM Boundary:** Gemini is isolated under `src/agent/`. The `src/replay/` package has no Gemini imports and never calls an LLM.
+5. **Runtime Secrets:** Credentials are provided through replay parameters, redacted in evidence, and never persisted as artifact defaults. Do not commit `.env` or expose API keys in terminal history, logs, screenshots, or chat.
+
+## 7. Verification Checklist
+
+Run these checks before local deployment:
+
+```powershell
+python -m pip check
+python -m pytest tests/ -q
+python -m src.cli serve --host 127.0.0.1 --port 3000
+```
+
+Then open `http://127.0.0.1:3000` and verify the primary replay, locked-out business outcome, artifact catalog, evidence vault, and escalation demo. Use the `AI Verification` button only when Gemini is intentionally configured.

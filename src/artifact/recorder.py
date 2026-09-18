@@ -76,7 +76,6 @@ class ArtifactRecorder:
                 required=True,
                 secret=True,
                 description="Sauce Demo login password",
-                default="secret_sauce",
             ),
             InputParam(
                 name="first_name",

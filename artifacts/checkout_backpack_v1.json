@@ -19,8 +19,7 @@
       "type": "string",
       "required": true,
       "secret": true,
-      "description": "Sauce Demo login password",
-      "default": "secret_sauce"
+      "description": "Sauce Demo login password"
     },
     {
       "name": "first_name",

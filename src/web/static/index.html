@@ -349,6 +349,28 @@
             object-fit: contain;
             background: #000;
         }
+
+        .assistant-launcher {
+            position: fixed;
+            right: 24px;
+            bottom: 24px;
+            z-index: 200;
+            background: var(--accent-cyan);
+            color: #04131a;
+            border: 1px solid rgba(255, 255, 255, 0.35);
+            border-radius: 999px;
+            padding: 12px 18px;
+            font: inherit;
+            font-size: 13px;
+            font-weight: 800;
+            cursor: pointer;
+            box-shadow: 0 8px 24px rgba(6, 182, 212, 0.28);
+        }
+
+        .assistant-launcher:hover {
+            filter: brightness(1.08);
+            transform: translateY(-1px);
+        }
     </style>
 </head>
 <body>
@@ -362,7 +384,6 @@
         </div>
         <nav>
             <button class="nav-btn active" onclick="switchTab('overview')">Overview</button>
-            <button class="nav-btn" onclick="switchTab('discovery')">LLM Discovery</button>
             <button class="nav-btn" onclick="switchTab('catalog')">Capability Artifacts</button>
             <button class="nav-btn" onclick="switchTab('replay')">Deterministic Replay</button>
             <button class="nav-btn" onclick="switchTab('escalation')">Live Escalation</button>
@@ -614,6 +635,10 @@
             </div>
         </section>
     </main>
+
+    <button class="assistant-launcher" type="button" onclick="switchTab('discovery')" title="Open optional Gemini discovery and verification tools">
+        AI Verification
+    </button>
 
     <script>
         function switchTab(tabId) {
