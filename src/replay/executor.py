@@ -103,6 +103,15 @@ class ReplayEngine:
             step_idx = 1
             extracted_outputs: dict[str, Any] = {}
 
+            # If browser starts at about:blank and artifact defines entry_url,
+            # navigate if the first step is not an explicit navigation action.
+            if page.url == "about:blank" and artifact.entry_url:
+                first_action = artifact.steps[0].action if artifact.steps else None
+                if first_action != "navigate":
+                    self.guardrail.check_url(artifact.entry_url)
+                    await page.goto(artifact.entry_url, wait_until="domcontentloaded", timeout=10000)
+                    await page.wait_for_timeout(500)
+
             for step in artifact.steps:
                 # Check policy for irreversible steps
                 if requires_approval_for_replay(step.risk, artifact.status) and not allow_draft_irreversible:

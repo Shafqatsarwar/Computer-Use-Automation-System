@@ -1,25 +1,23 @@
 # Computer-Use Automation System
 
 > **interface.ai Engineering Take-Home Challenge**  
-> A deterministic browser-automation capability platform with optional Gemini-assisted discovery.
+> A deterministic browser-automation capability platform. Gemini performs a required, real discovery run once per capability; every subsequent invocation replays with zero LLM calls.
 
 ---
 
 ## 1. System Overview
 
-The system turns a browser workflow into a typed, reusable capability. The primary production path is deterministic replay of a saved artifact. Gemini is a secondary tool used only for initial discovery or optional verification; it is never part of the replay decision loop.
+The system turns a browser workflow into a typed, reusable capability. The system uses an LLM (Google Gemini) once during discovery to explore the live UI and emit a typed capability artifact. Every subsequent execution in production is a deterministic replay of that artifact with strictly zero LLM calls in the loop.
 
 ```text
-Saved Capability Artifact
+Discovery Phase (Run once per workflow):
+Natural-Language Goal → Gemini Discovery (A11y perception + tool calling) → Typed Capability Artifact
         ↓
-Deterministic Replay Engine (PRIMARY, ZERO LLM/API in loop)
+Production Execution (Replay many times):
+Saved Capability Artifact → Deterministic Replay Engine (Strictly ZERO LLM) → Extracted Outputs / Outcome Taxonomy
         ↓
-Outcome & Error Taxonomy (Business Outcomes vs. Recoverable vs. Hard Failures)
-        ↓
-Human-in-the-Loop Escalation (Live Session Transfer, Pause & Resume)
-
-Optional secondary path:
-Natural-Language Goal → Gemini Discovery → Typed Capability Artifact
+Human Escalation (When stuck):
+Live Browser CDP Session Transfer → Operator Console Takeover → Safe Resume
 ```
 
 ### Central Philosophy
@@ -34,8 +32,8 @@ Natural-Language Goal → Gemini Discovery → Typed Capability Artifact
 | Safety guardrails | Enforces domains, actions, risk policy, and redaction | No |
 | Human escalation | Pauses, records operator actions, and resumes the same session | No |
 | Capability catalog | Loads and validates local JSON artifacts | No |
-| Gemini discovery | Creates a new artifact from a natural-language goal | Yes, optional |
-| AI verification | Optional secondary investigation from the dashboard | Yes, optional |
+| Gemini discovery | Creates a new artifact from a natural-language goal | Yes (one-time per capability) |
+| AI verification | Live discovery and verification modal from the dashboard | Yes |
 
 ---
 
@@ -99,11 +97,11 @@ python -m src.cli escalate-test
 ```
 *Expected Output:* A broken locator pauses the live session, a human action is recorded, and the workflow resumes.
 
-### D. Secondary path: Gemini discovery (optional)
+### D. Discovery (required once, to produce the artifact submitted with this project)
 ```bash
 python -m src.cli discover --goal "Log in, add Sauce Labs Backpack to cart, complete checkout to the overview page, report the total" --url https://www.saucedemo.com
 ```
-This is the only command in the standard workflow that requires `GEMINI_API_KEY`. It makes real Gemini calls against the live UI and records `model_used` in the discovery transcript. A quota or API failure affects discovery only; it does not affect replay of an existing artifact.
+This is the LLM-driven discovery command that requires `GEMINI_API_KEY`. It makes real Gemini API calls against the live UI, records `model_used` (`gemini-2.5-flash`) in the discovery transcript, and automatically compiles the resulting `CapabilityArtifact`.
 
 > [!TIP]
 > You can append `--headed` to any `replay`, `discover`, or `escalate-test` command to watch the live browser execution directly on your screen.
@@ -138,7 +136,7 @@ Open **[http://localhost:3000](http://localhost:3000)** in your browser:
 ├── guardrails/
 │   └── allowlist.yaml      # Permitted domains and actions
 ├── src/
-│   ├── agent/              # Optional LLM Discovery Loop (Gemini + fallback)
+│   ├── agent/              # LLM Discovery Loop (Gemini + fallback)
 │   ├── artifact/           # Pydantic v2 Capability Artifact Schema & Recorder
 │   ├── escalation/         # Live session handoff & operator CLI
 │   ├── evidence/           # Structured JSONL logger with secret redaction

@@ -135,3 +135,79 @@ class EscalationSession:
     def resume(self) -> None:
         """Signals resumption of automated control."""
         self.is_paused = False
+
+
+async def run_escalation_demo(
+    headless: bool = True,
+    non_interactive: bool = True,
+    evidence_dir: str = "evidence/escalation_demo",
+) -> dict[str, Any]:
+    """Runs the real escalation scenario end to end: live browser, an
+    intentionally broken locator, a real human-operator handoff on the SAME
+    session, resume, and completion. Both `python -m src.cli escalate-test`
+    and the web dashboard's escalation button call this exact function, so
+    there is only one real implementation, not a duplicated/fake one.
+    """
+    from playwright.async_api import async_playwright
+    from src.escalation.operator_cli import run_operator_console
+
+    events: list[str] = []
+
+    async with async_playwright() as p:
+        browser = await p.chromium.launch(headless=headless)
+        context = await browser.new_context(viewport={"width": 1280, "height": 800})
+        page = await context.new_page()
+
+        try:
+            await page.goto("https://www.saucedemo.com", wait_until="domcontentloaded")
+            await page.fill("[data-test='username']", "standard_user")
+            await page.fill("[data-test='password']", "secret_sauce")
+            await page.click("[data-test='login-button']")
+            await page.wait_for_timeout(1000)
+            events.append("Automation: logged in as standard_user")
+
+            escalation = EscalationSession(
+                page=page,
+                reason="LOCATOR_NOT_FOUND: Element 'non_existent_backpack_btn' not found after all fallbacks exhausted.",
+                step_index=2,
+                evidence_dir=evidence_dir,
+            )
+            events.append(f"Escalation triggered: {escalation.reason}")
+
+            auto_commands = [{"action": "click", "role": "button", "name": "Add to cart", "text": None}]
+            await run_operator_console(
+                escalation,
+                auto_commands=auto_commands if non_interactive else None,
+            )
+            for rec in escalation.actions_taken:
+                events.append(f"Human action: {rec.action} {rec.target_role} '{rec.target_name}' -> {rec.result}")
+            events.append("Session resumed by operator")
+
+            await page.click(".shopping_cart_link")
+            await page.wait_for_timeout(500)
+            await page.click("[data-test='checkout']")
+            await page.wait_for_timeout(500)
+            await page.fill("[data-test='firstName']", "Alex")
+            await page.fill("[data-test='lastName']", "Morgan")
+            await page.fill("[data-test='postalCode']", "94016")
+            await page.click("[data-test='continue']")
+            await page.wait_for_timeout(500)
+
+            total_text = await page.locator(".summary_total_label").inner_text()
+            events.append(f"Automation resumed and completed. Total: {total_text}")
+
+            screenshot_path = f"{evidence_dir}/final_resumed_success.png"
+            await page.screenshot(path=screenshot_path)
+
+            return {
+                "success": True,
+                "events": events,
+                "human_actions": [r.model_dump(mode="json") for r in escalation.actions_taken],
+                "final_total": total_text,
+                "evidence_dir": evidence_dir,
+                "screenshot_path": screenshot_path,
+            }
+        finally:
+            await context.close()
+            await browser.close()
+

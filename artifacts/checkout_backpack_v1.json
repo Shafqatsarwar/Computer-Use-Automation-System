@@ -2,7 +2,7 @@
   "id": "checkout_backpack_v1",
   "version": 1,
   "name": "Sauce Demo Backpack Checkout",
-  "description": "Logs into Sauce Demo, adds the Sauce Labs Backpack to the cart, proceeds through checkout with shipping info, and asserts order review screen total.",
+  "description": "Logs into Sauce Demo, adds Sauce Labs Backpack to cart, completes checkout step one, and verifies order review screen with total calculation.",
   "target_app": "saucedemo",
   "entry_url": "https://www.saucedemo.com",
   "input_params": [
@@ -19,14 +19,15 @@
       "type": "string",
       "required": true,
       "secret": true,
-      "description": "Sauce Demo login password"
+      "description": "Sauce Demo login password",
+      "default": null
     },
     {
       "name": "first_name",
       "type": "string",
       "required": false,
       "secret": false,
-      "description": "Shipping first name",
+      "description": "Checkout shipping first name",
       "default": "Alex"
     },
     {
@@ -34,7 +35,7 @@
       "type": "string",
       "required": false,
       "secret": false,
-      "description": "Shipping last name",
+      "description": "Checkout shipping last name",
       "default": "Morgan"
     },
     {
@@ -42,7 +43,7 @@
       "type": "string",
       "required": false,
       "secret": false,
-      "description": "Shipping postal code",
+      "description": "Checkout shipping postal code",
       "default": "94016"
     }
   ],
@@ -56,58 +57,76 @@
       "checkpoint": "url_contains:saucedemo.com"
     },
     {
-      "id": "step_2_type_user",
+      "id": "step_2",
       "action": "type",
       "locator": {
         "strategy": "role",
         "role": "textbox",
         "name": "Username",
+        "css": null,
         "fallback": {
           "strategy": "text",
+          "role": null,
           "name": "Username",
+          "css": null,
           "fallback": {
             "strategy": "css",
-            "css": "[data-test='username']"
+            "role": null,
+            "name": null,
+            "css": "[data-test='username']",
+            "fallback": null
           }
         }
       },
       "value_param": "username",
-      "risk": "safe",
+      "risk": "reversible",
       "checkpoint": null
     },
     {
-      "id": "step_3_type_pass",
+      "id": "step_3",
       "action": "type",
       "locator": {
         "strategy": "role",
         "role": "textbox",
         "name": "Password",
+        "css": null,
         "fallback": {
           "strategy": "text",
+          "role": null,
           "name": "Password",
+          "css": null,
           "fallback": {
             "strategy": "css",
-            "css": "[data-test='password']"
+            "role": null,
+            "name": null,
+            "css": "[data-test='password']",
+            "fallback": null
           }
         }
       },
       "value_param": "password",
-      "risk": "safe",
+      "risk": "reversible",
       "checkpoint": null
     },
     {
-      "id": "step_4_click_login",
+      "id": "step_4",
       "action": "click",
       "locator": {
         "strategy": "role",
         "role": "button",
         "name": "Login",
+        "css": null,
         "fallback": {
           "strategy": "text",
+          "role": null,
           "name": "Login",
+          "css": null,
           "fallback": {
             "strategy": "css",
-            "css": "[data-test='login-button']"
+            "role": null,
+            "name": null,
+            "css": "[data-test='login-button']",
+            "fallback": null
           }
         }
       },
@@ -116,18 +135,24 @@
       "checkpoint": "url_contains:/inventory.html"
     },
     {
-      "id": "step_5_add_backpack",
+      "id": "step_5",
       "action": "click",
       "locator": {
         "strategy": "role",
         "role": "button",
         "name": "Add to cart",
+        "css": null,
         "fallback": {
           "strategy": "text",
+          "role": null,
           "name": "Add to cart",
+          "css": null,
           "fallback": {
             "strategy": "css",
-            "css": "[data-test='add-to-cart-sauce-labs-backpack']"
+            "role": null,
+            "name": null,
+            "css": ".shopping_cart_link",
+            "fallback": null
           }
         }
       },
@@ -136,38 +161,50 @@
       "checkpoint": "text_visible:Remove"
     },
     {
-      "id": "step_6_open_cart",
+      "id": "step_6",
       "action": "click",
       "locator": {
         "strategy": "role",
         "role": "link",
         "name": "1",
+        "css": null,
         "fallback": {
-          "strategy": "css",
-          "css": ".shopping_cart_link",
+          "strategy": "text",
+          "role": null,
+          "name": "1",
+          "css": null,
           "fallback": {
-            "strategy": "text",
-            "name": "Your Cart"
+            "strategy": "css",
+            "role": null,
+            "name": null,
+            "css": ".shopping_cart_link",
+            "fallback": null
           }
         }
       },
       "value_param": null,
-      "risk": "safe",
-      "checkpoint": "url_contains:/cart.html"
+      "risk": "reversible",
+      "checkpoint": null
     },
     {
-      "id": "step_7_click_checkout",
+      "id": "step_7",
       "action": "click",
       "locator": {
         "strategy": "role",
         "role": "button",
         "name": "Checkout",
+        "css": null,
         "fallback": {
           "strategy": "text",
+          "role": null,
           "name": "Checkout",
+          "css": null,
           "fallback": {
             "strategy": "css",
-            "css": "[data-test='checkout']"
+            "role": null,
+            "name": null,
+            "css": "[data-test='checkout']",
+            "fallback": null
           }
         }
       },
@@ -176,78 +213,102 @@
       "checkpoint": "url_contains:/checkout-step-one.html"
     },
     {
-      "id": "step_8_type_fname",
+      "id": "step_8",
       "action": "type",
       "locator": {
         "strategy": "role",
         "role": "textbox",
         "name": "First Name",
+        "css": null,
         "fallback": {
           "strategy": "text",
+          "role": null,
           "name": "First Name",
+          "css": null,
           "fallback": {
             "strategy": "css",
-            "css": "[data-test='firstName']"
+            "role": null,
+            "name": null,
+            "css": "[data-test='firstName']",
+            "fallback": null
           }
         }
       },
       "value_param": "first_name",
-      "risk": "safe",
+      "risk": "reversible",
       "checkpoint": null
     },
     {
-      "id": "step_9_type_lname",
+      "id": "step_9",
       "action": "type",
       "locator": {
         "strategy": "role",
         "role": "textbox",
         "name": "Last Name",
+        "css": null,
         "fallback": {
           "strategy": "text",
+          "role": null,
           "name": "Last Name",
+          "css": null,
           "fallback": {
             "strategy": "css",
-            "css": "[data-test='lastName']"
+            "role": null,
+            "name": null,
+            "css": "[data-test='lastName']",
+            "fallback": null
           }
         }
       },
       "value_param": "last_name",
-      "risk": "safe",
+      "risk": "reversible",
       "checkpoint": null
     },
     {
-      "id": "step_10_type_zip",
+      "id": "step_10",
       "action": "type",
       "locator": {
         "strategy": "role",
         "role": "textbox",
         "name": "Zip/Postal Code",
+        "css": null,
         "fallback": {
           "strategy": "text",
+          "role": null,
           "name": "Zip/Postal Code",
+          "css": null,
           "fallback": {
             "strategy": "css",
-            "css": "[data-test='postalCode']"
+            "role": null,
+            "name": null,
+            "css": "[data-test='postalCode']",
+            "fallback": null
           }
         }
       },
       "value_param": "postal_code",
-      "risk": "safe",
+      "risk": "reversible",
       "checkpoint": null
     },
     {
-      "id": "step_11_click_continue",
+      "id": "step_11",
       "action": "click",
       "locator": {
         "strategy": "role",
         "role": "button",
         "name": "Continue",
+        "css": null,
         "fallback": {
           "strategy": "text",
+          "role": null,
           "name": "Continue",
+          "css": null,
           "fallback": {
             "strategy": "css",
-            "css": "[data-test='continue']"
+            "role": null,
+            "name": null,
+            "css": "[data-test='continue']",
+            "fallback": null
           }
         }
       },
@@ -262,7 +323,10 @@
       "type": "string",
       "extract_from": {
         "strategy": "css",
-        "css": ".summary_subtotal_label"
+        "role": null,
+        "name": null,
+        "css": ".summary_subtotal_label",
+        "fallback": null
       }
     },
     {
@@ -270,7 +334,10 @@
       "type": "string",
       "extract_from": {
         "strategy": "css",
-        "css": ".summary_tax_label"
+        "role": null,
+        "name": null,
+        "css": ".summary_tax_label",
+        "fallback": null
       }
     },
     {
@@ -278,7 +345,10 @@
       "type": "string",
       "extract_from": {
         "strategy": "css",
-        "css": ".summary_total_label"
+        "role": null,
+        "name": null,
+        "css": ".summary_total_label",
+        "fallback": null
       }
     }
   ],
@@ -309,7 +379,7 @@
       "message": "The username or password supplied was invalid."
     }
   ],
-  "created_from_run_id": "discovery_initial_saucedemo_backpack",
-  "created_at": "2026-09-17T21:00:00Z",
+  "created_from_run_id": "discovery_20260919_200913_f3607a",
+  "created_at": "2026-09-19T20:12:45.745299Z",
   "status": "approved"
 }

@@ -54,12 +54,24 @@ class GeminiDiscoveryClient:
         config = types.GenerateContentConfig(
             tools=DISCOVERY_TOOLS,
             temperature=0.1,
+            # Force a function call every turn. Without this, gemini-2.5-flash can
+            # respond with plain text on an ambiguous page, which our extractor
+            # then treats as "no tool call" and silently falls back to the
+            # secondary model for that turn -- this was why every real discovery
+            # run so far had model_used == gemini-3-flash-preview on every step.
+            tool_config=types.ToolConfig(
+                function_calling_config=types.FunctionCallingConfig(mode="ANY")
+            ),
             system_instruction=system_instruction or (
                 "You are an expert browser automation agent operating a legacy enterprise/e-commerce UI. "
                 "Your objective is to accomplish the user's goal by taking ONE discrete action at a time. "
                 "Inspect the provided accessibility tree and current page state carefully. "
-                "Use 'click' with role and accessible name, 'type' with role, name and text, or 'navigate'. "
-                "Call 'finish' immediately when the target page or goal is achieved."
+                "If operating Sauce Demo (saucedemo.com), use username 'standard_user' and password 'secret_sauce' to log in. "
+                "If already on the login page or target URL, do not call navigate again; proceed directly to type. "
+                "For checkout forms, enter standard test shipping info (e.g. First Name 'Alex', Last Name 'Morgan', Zip '94016'). "
+                "CRITICAL: When you reach the order overview screen ('/checkout-step-two.html'), the goal is ACHIEVED! "
+                "Call finish(success=True, reason='Reached checkout overview screen with item totals and tax'). Do NOT click the 'Finish' button. "
+                "Use 'click' with role and accessible name, 'type' with role, name and text, or 'navigate'."
             ),
         )
 

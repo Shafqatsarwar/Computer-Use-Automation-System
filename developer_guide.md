@@ -62,7 +62,7 @@ python -m src.cli escalate-test
 
 ### 1.6 Running Test Suite
 ```bash
-# Run all 15 unit and integration tests (100% offline, zero API required)
+# Run all 22 unit and integration tests (100% offline, zero live API quota required)
 pytest tests/ -v
 ```
 
@@ -77,10 +77,8 @@ pytest tests/ -v
 ├── docs/
 │   └── build-brief.md                # Source of truth specification & build plan
 ├── evidence/                         # Per-run JSONL audit logs, screenshots, a11y dumps
-│   ├── demo_discovery_run/           # Discovery transcript & log proof
-│   ├── demo_replay_happy_path/       # Happy path replay proof
-│   ├── demo_replay_locked_out_user/  # Business outcome replay proof
-│   └── escalation_demo/              # Human takeover & resume audit log
+│   ├── discovery_20260919_200913_f3607a/ # Genuine discovery transcript & log proof
+│   ├── escalation_demo/              # Human takeover & resume audit log
 ├── guardrails/
 │   └── allowlist.yaml                # Permitted domains & action whitelist
 ├── src/
@@ -110,9 +108,11 @@ pytest tests/ -v
 │   │   ├── app.py                    # REST APIs & Embedded LegacyBank Demo
 │   │   └── static/index.html         # Single-page interactive UI (Port 3000)
 │   └── cli.py                        # Unified command-line interface entry point
-├── tests/                            # Comprehensive Pytest test suite
+├── tests/                            # Comprehensive Pytest test suite (22 tests)
 │   ├── test_allowlist.py
 │   ├── test_api.py
+│   ├── test_escalation_demo.py
+│   ├── test_model_client.py
 │   ├── test_redactor.py
 │   ├── test_replay.py
 │   ├── test_risk.py
@@ -168,6 +168,17 @@ pytest tests/ -v
 - **Resolution:**
   1. Check if the failure is actually an upstream business condition (e.g. `USER_LOCKED_OUT`), which the engine classifies automatically under `known_outcomes`.
   2. Inspect the locator fallback chain in `artifacts/checkout_backpack_v1.json`: ensure `strategy: "role"` has a fallback to `strategy: "text"` or `strategy: "css"`.
+
+### 3.6 Gemini Function Calling & Discovery Headroom
+- **Symptom:** Discovery falls back to `gemini-3-flash-preview` on every step, or terminates prematurely with `Max steps reached without finish()`.
+- **Root Cause:** Without explicit tool calling configuration, `gemini-2.5-flash` can respond with conversational plain text on ambiguous pages. Since `_extract_decision()` parses structured function calls, plain-text responses trigger unnecessary fallback hops.
+- **Resolution:**
+  1. `src/agent/model_client.py` enforces `tool_config=types.ToolConfig(function_calling_config=types.FunctionCallingConfig(mode="ANY"))`, guaranteeing structured function calls on every turn.
+  2. Discovery defaults are configured with generous headroom (`max_steps=25`, `timeout_seconds=240`) in both `src/agent/loop.py` and `src/web/app.py`.
+
+### 3.7 Unified Escalation Mechanism (CLI & Web Dashboard)
+- **Architecture:** Both the CLI (`python -m src.cli escalate-test`) and the Web Dashboard (`POST /api/escalate/demo`) call the single shared function `src/escalation/handoff.py::run_escalation_demo`.
+- **Operational Invariant:** The web dashboard's escalation terminal runs against a real live browser session, triggers an intentional broken locator, pauses, records human intervention (`[actor: "human"]`), and resumes the same CDP session to order completion.
 
 ---
 

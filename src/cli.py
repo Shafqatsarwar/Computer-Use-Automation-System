@@ -123,7 +123,7 @@ async def handle_replay(args: argparse.Namespace) -> None:
 
 async def handle_escalate_test(args: argparse.Namespace) -> None:
     """Demonstrates live session pause, human intervention, and resumption."""
-    from playwright.async_api import async_playwright
+    from src.escalation.handoff import run_escalation_demo
 
     console.print(Panel(
         "[bold yellow]Simulating Broken Locator to Test Human Escalation on Live Browser Session[/bold yellow]\n"
@@ -135,56 +135,13 @@ async def handle_escalate_test(args: argparse.Namespace) -> None:
         title="Human Escalation Test Scenario",
     ))
 
-    async with async_playwright() as p:
-        browser = await p.chromium.launch(headless=args.headless)
-        context = await browser.new_context(viewport={"width": 1280, "height": 800})
-        page = await context.new_page()
-
-        try:
-            # Navigate to login
-            await page.goto("https://www.saucedemo.com", wait_until="domcontentloaded")
-            await page.fill("[data-test='username']", "standard_user")
-            await page.fill("[data-test='password']", "secret_sauce")
-            await page.click("[data-test='login-button']")
-            await page.wait_for_timeout(1000)
-
-            # Intentional failure: attempt to find a non-existent button
-            console.print("[yellow]Attempting to locate deliberately broken element 'non_existent_backpack_btn'...[/yellow]")
-            escalation = EscalationSession(
-                page=page,
-                reason="LOCATOR_NOT_FOUND: Element 'non_existent_backpack_btn' not found after all fallbacks exhausted.",
-                step_index=2,
-                evidence_dir="evidence/escalation_demo",
-            )
-
-            # Run operator console (with auto scripted fix command for automated verification)
-            auto_commands = [
-                {"action": "click", "role": "button", "name": "Add to cart", "text": None},
-            ]
-            await run_operator_console(escalation, auto_commands=auto_commands if args.non_interactive else None)
-
-            # Resume automated flow
-            console.print("[green]Resuming automated checkout verification...[/green]")
-            await page.click(".shopping_cart_link")
-            await page.wait_for_timeout(500)
-            await page.click("[data-test='checkout']")
-            await page.wait_for_timeout(500)
-            await page.fill("[data-test='firstName']", "Alex")
-            await page.fill("[data-test='lastName']", "Morgan")
-            await page.fill("[data-test='postalCode']", "94016")
-            await page.click("[data-test='continue']")
-            await page.wait_for_timeout(500)
-
-            total_elem = page.locator(".summary_total_label")
-            total_text = await total_elem.inner_text()
-            console.print(f"[bold green][SUCCESS] Flow successfully completed after human intervention! Final Total: {total_text}[/bold green]")
-            
-            # Save final screenshot
-            await page.screenshot(path="evidence/escalation_demo/final_resumed_success.png")
-
-        finally:
-            await context.close()
-            await browser.close()
+    result = await run_escalation_demo(headless=args.headless, non_interactive=args.non_interactive)
+    for line in result["events"]:
+        console.print(f"[cyan]{line}[/cyan]")
+    console.print(
+        f"[bold green][SUCCESS] Flow completed after human intervention! "
+        f"Final Total: {result['final_total']}[/bold green]"
+    )
 
 
 def main() -> None:
@@ -196,7 +153,8 @@ def main() -> None:
     disc_parser.add_argument("--goal", required=True, help="Natural language goal")
     disc_parser.add_argument("--url", default="https://www.saucedemo.com", help="Entry URL")
     disc_parser.add_argument("--artifact-id", default="checkout_backpack_v1", help="Artifact ID")
-    disc_parser.add_argument("--max-steps", type=int, default=15, help="Max discovery steps")
+    disc_parser.add_argument("--max-steps", type=int, default=25, help="Max discovery steps")
+    disc_parser.add_argument("--timeout", type=int, default=240, help="Timeout in seconds")
     disc_parser.add_argument("--headless", action=argparse.BooleanOptionalAction, default=True, help="Run browser in headless mode (or --no-headless)")
     disc_parser.add_argument("--headed", dest="headless", action="store_false", help="Run browser in visible (headed) mode")
 

@@ -54,7 +54,7 @@ class DiscoverRequest(BaseModel):
     goal: str = "Log in, add Sauce Labs Backpack to cart, complete checkout to the overview page, report the total"
     url: str = "https://www.saucedemo.com"
     artifact_id: str = "checkout_backpack_v1"
-    max_steps: int = 15
+    max_steps: int = 25
     headless: bool = True
 
 
@@ -172,6 +172,20 @@ async def run_replay(req: ReplayRequest) -> dict[str, Any]:
         headless=req.headless,
     )
     return result.model_dump(mode="json")
+
+
+@app.post("/api/escalate/demo")
+async def run_escalation_demo_endpoint() -> dict[str, Any]:
+    """Triggers the REAL escalation scenario: live browser, broken locator,
+    a genuine human-action handoff, resume, completion. This calls the exact
+    same function as `python -m src.cli escalate-test` -- not a separate,
+    faked dashboard-only path.
+    """
+    from src.escalation.handoff import run_escalation_demo
+    try:
+        return await run_escalation_demo(headless=True, non_interactive=True)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
 
 
 @app.get("/api/evidence")

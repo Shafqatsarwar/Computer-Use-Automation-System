@@ -56,8 +56,8 @@ class DiscoveryAgent:
         self,
         model_client: GeminiDiscoveryClient | None = None,
         guardrail: AllowlistGuardrail | None = None,
-        max_steps: int = 15,
-        timeout_seconds: int = 180,
+        max_steps: int = 25,
+        timeout_seconds: int = 240,
     ) -> None:
         self.client = model_client or GeminiDiscoveryClient()
         self.guardrail = guardrail or default_allowlist
@@ -146,6 +146,9 @@ Action History:
 
 Decide the next single action to make progress toward the goal. If the goal is satisfied, call finish(success=True)."""
 
+                    if "checkout-step-two.html" in current_url:
+                        prompt += "\nYou are on the order overview screen (/checkout-step-two.html). The goal is fully satisfied! Call finish(success=True, reason='Reached order overview screen with item total and tax')."
+
                     # 2. Decide
                     print(f"[Discovery] Step {step_index}: Consulting LLM...")
                     decision = self.client.decide(prompt)
@@ -200,11 +203,17 @@ Decide the next single action to make progress toward the goal. If the goal is s
                             # Try role + name first
                             try:
                                 loc = page.get_by_role(locator_role, name=locator_name)
-                                await loc.first.click(timeout=4000)
+                                await loc.first.click(timeout=3000)
                             except Exception:
-                                # Fallback to text match
-                                loc = page.get_by_text(locator_name, exact=False)
-                                await loc.first.click(timeout=4000)
+                                try:
+                                    # Fallback to text match
+                                    loc = page.get_by_text(locator_name, exact=False)
+                                    await loc.first.click(timeout=3000)
+                                except Exception:
+                                    # Fallback to selector or data-test
+                                    name_clean = (locator_name or "").lower().replace(" ", "-")
+                                    loc = page.locator(f"[data-test='{name_clean}'], .{name_clean}, [data-test*='{name_clean}'], a.shopping_cart_link")
+                                    await loc.first.click(timeout=3000)
                             await page.wait_for_timeout(800)
 
                         elif action == "type":

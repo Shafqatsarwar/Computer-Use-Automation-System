@@ -1,0 +1,2 @@
+{"event": "replay_start", "artifact_id": "checkout_backpack_v1", "version": 1, "target_app": "saucedemo", "params": {"username": "standard_user", "password": "****", "first_name": "Alex", "last_name": "Morgan", "postal_code": "94016"}, "timestamp": "2026-09-19T20:14:20.177412+00:00"}
+{"event": "blocked_irreversible_step", "step_id": "step_1_nav", "risk": "irreversible", "status": "draft"}

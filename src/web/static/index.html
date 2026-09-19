@@ -797,19 +797,22 @@
 
         async function runEscalationTest() {
             const term = document.getElementById('esc-terminal');
-            term.innerHTML = '<span class="log-tag warn">SIMULATION</span> Starting Replay with Intentionally Broken Locator...\n';
-            term.innerHTML += '[Automation] Step 1: Navigated to saucedemo.com -> SUCCESS\n';
-            term.innerHTML += '[Automation] Step 2: Typed username & password -> SUCCESS\n';
-            term.innerHTML += '<span class="log-tag error">FAIL</span> Step 3: Locator \'non_existent_backpack_btn\' NOT FOUND after trying [role, text, css] strategies!\n';
-            term.innerHTML += '<span class="log-tag warn">ESCALATION</span> Automated loop PAUSED. Control transferred to Operator on live CDP session.\n\n';
-            
-            setTimeout(() => {
-                term.innerHTML += '<span class="log-tag info">HUMAN</span> [actor: "human"] Operator performed: click role="button" name="Add to cart"\n';
-                term.innerHTML += '<span class="log-tag info">HUMAN</span> [actor: "human"] Element clicked successfully on live session.\n';
-                term.innerHTML += '<span class="log-tag success">RESUME</span> Operator clicked Resume Automation -> Control returned to engine.\n';
-                term.innerHTML += '[Automation] Step 4: Proceeded to checkout -> Overview Screen reached.\n';
-                term.innerHTML += '<span class="log-tag success">SUCCESS</span> Total verified: $32.39. Evidence saved to evidence/escalation_demo/\n';
-            }, 1000);
+            term.innerHTML = '<span class="log-tag warn">LIVE</span> Launching real browser session, triggering intentional locator failure...\n';
+            try {
+                const res = await fetch('/api/escalate/demo', { method: 'POST' });
+                const data = await res.json();
+                if (!res.ok) {
+                    term.innerHTML += `<span class="log-tag error">ERROR</span> ${data.detail || 'Escalation demo failed'}\n`;
+                    return;
+                }
+                (data.events || []).forEach(line => {
+                    const tag = line.startsWith('Human action') ? 'info' : (line.includes('resumed') ? 'success' : 'info');
+                    term.innerHTML += `<span class="log-tag ${tag}">${tag.toUpperCase()}</span> ${line}\n`;
+                });
+                term.innerHTML += `<span class="log-tag success">SUCCESS</span> Total verified: ${data.final_total}. Evidence saved to ${data.evidence_dir}/\n`;
+            } catch (e) {
+                term.innerHTML += `<span class="log-tag error">ERROR</span> ${e}\n`;
+            }
         }
 
         function logOperator(msg) {
