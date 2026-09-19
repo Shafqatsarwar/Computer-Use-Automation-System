@@ -22,6 +22,7 @@ class AllowlistGuardrail:
         if config_path is None:
             # Default search path
             potential_paths = [
+                Path(__file__).parent / "allowlist.yaml",
                 Path("guardrails/allowlist.yaml"),
                 Path(__file__).parent.parent.parent / "guardrails" / "allowlist.yaml",
             ]

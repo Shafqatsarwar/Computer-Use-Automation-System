@@ -105,6 +105,10 @@ python -m src.cli discover --goal "Log in, add Sauce Labs Backpack to cart, comp
 ```
 This is the only command in the standard workflow that requires `GEMINI_API_KEY`. It makes real Gemini calls against the live UI and records `model_used` in the discovery transcript. A quota or API failure affects discovery only; it does not affect replay of an existing artifact.
 
+> [!TIP]
+> You can append `--headed` to any `replay`, `discover`, or `escalate-test` command to watch the live browser execution directly on your screen.
+
+
 ---
 
 ## 4. Web Dashboard & Operator Console (Port 3000)

@@ -197,19 +197,21 @@ def main() -> None:
     disc_parser.add_argument("--url", default="https://www.saucedemo.com", help="Entry URL")
     disc_parser.add_argument("--artifact-id", default="checkout_backpack_v1", help="Artifact ID")
     disc_parser.add_argument("--max-steps", type=int, default=15, help="Max discovery steps")
-    disc_parser.add_argument("--timeout", type=int, default=180, help="Timeout in seconds")
-    disc_parser.add_argument("--headless", action="store_true", default=True, help="Run browser in headless mode")
+    disc_parser.add_argument("--headless", action=argparse.BooleanOptionalAction, default=True, help="Run browser in headless mode (or --no-headless)")
+    disc_parser.add_argument("--headed", dest="headless", action="store_false", help="Run browser in visible (headed) mode")
 
     # replay
     rep_parser = subparsers.add_parser("replay", help="Run deterministic replay")
     rep_parser.add_argument("--artifact", required=True, help="Artifact ID (e.g. checkout_backpack_v1)")
     rep_parser.add_argument("--params", nargs="*", help="Key=value parameters (e.g. username=standard_user password=secret_sauce)")
-    rep_parser.add_argument("--headless", action="store_true", default=True, help="Run browser in headless mode")
+    rep_parser.add_argument("--headless", action=argparse.BooleanOptionalAction, default=True, help="Run browser in headless mode (or --no-headless)")
+    rep_parser.add_argument("--headed", dest="headless", action="store_false", help="Run browser in visible (headed) mode")
 
     # escalate-test
     esc_parser = subparsers.add_parser("escalate-test", help="Test live session escalation and takeover")
-    esc_parser.add_argument("--headless", action="store_true", default=True, help="Run browser headless")
-    esc_parser.add_argument("--non-interactive", action="store_true", default=True, help="Run scripted operator fix for CI/demo")
+    esc_parser.add_argument("--headless", action=argparse.BooleanOptionalAction, default=True, help="Run browser in headless mode (or --no-headless)")
+    esc_parser.add_argument("--headed", dest="headless", action="store_false", help="Run browser in visible (headed) mode")
+    esc_parser.add_argument("--non-interactive", action=argparse.BooleanOptionalAction, default=True, help="Run scripted operator fix for CI/demo")
 
     # serve
     srv_parser = subparsers.add_parser("serve", help="Launch interactive Web App & Operator Console at localhost:3000")

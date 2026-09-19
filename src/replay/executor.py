@@ -12,10 +12,14 @@ from __future__ import annotations
 import asyncio
 from datetime import datetime, timezone
 import json
+import os
 from pathlib import Path
 import time
 from typing import Any
 import uuid
+from dotenv import load_dotenv
+
+load_dotenv()
 
 from playwright.async_api import Page, async_playwright
 
@@ -46,16 +50,24 @@ class ReplayEngine:
         run_params = dict(params or {})
 
         # 1. Validate required input parameters before browser launch
+        # Checks run_params, then environment variables, then schema defaults
         for ip in artifact.input_params:
             if ip.name not in run_params:
-                if ip.default is not None:
+                env_val = (
+                    os.getenv(ip.name.upper())
+                    or os.getenv(f"SAUCE_{ip.name.upper()}")
+                    or os.getenv(f"SAUCEDEMO_{ip.name.upper()}")
+                )
+                if env_val:
+                    run_params[ip.name] = env_val
+                elif ip.default is not None:
                     run_params[ip.name] = ip.default
                 elif ip.required:
                     return ReplayResult(
                         status="hard_failure",
                         outcome_code="INVALID_INPUT",
                         expected=f"Required parameter '{ip.name}'",
-                        observed="Parameter missing from input dictionary",
+                        observed="Parameter missing from input dictionary and environment variables",
                         message=f"Missing required parameter: {ip.name}",
                     )
 
@@ -157,7 +169,10 @@ class ReplayEngine:
                         await page.wait_for_timeout(1000)
 
                     elif step.action == "read":
-                        pass
+                        if step.locator:
+                            element = await resolve_locator(page, step.locator, timeout_ms=3000)
+                            if element is None:
+                                raise LocatorNotFoundError(f"Could not locate element to read at step {step.id}")
 
                     # Step executed successfully
                     _log_event({
@@ -207,16 +222,28 @@ class ReplayEngine:
                         message=f"Step {step.id} failed: {step_err}",
                     )
 
-                # Check step checkpoint if defined
+                # Check step checkpoint if defined with resilient polling window (up to 4.0s)
                 if step.checkpoint:
                     checkpoint_passed = False
-                    if step.checkpoint.startswith("url_contains:"):
-                        expected_frag = step.checkpoint[len("url_contains:"):].strip()
-                        checkpoint_passed = expected_frag in page.url
-                    elif step.checkpoint.startswith("text_visible:"):
-                        expected_text = step.checkpoint[len("text_visible:"):].strip()
-                        body = await page.inner_text("body")
-                        checkpoint_passed = expected_text.lower() in body.lower()
+                    start_poll = time.time()
+                    while time.time() - start_poll < 4.0:
+                        if step.checkpoint.startswith("url_contains:"):
+                            expected_frag = step.checkpoint[len("url_contains:"):].strip()
+                            if expected_frag in page.url:
+                                checkpoint_passed = True
+                                break
+                        elif step.checkpoint.startswith("text_visible:"):
+                            expected_text = step.checkpoint[len("text_visible:"):].strip()
+                            body = await page.inner_text("body")
+                            if expected_text.lower() in body.lower():
+                                checkpoint_passed = True
+                                break
+
+                        # Fast-fail if a known business outcome appeared during the transition
+                        outcome = await check_known_outcomes(page, artifact.known_outcomes)
+                        if outcome and outcome.matched:
+                            break
+                        await page.wait_for_timeout(250)
 
                     if not checkpoint_passed:
                         # Before failing, check if this is a known business outcome
@@ -250,19 +277,33 @@ class ReplayEngine:
 
                 step_idx += 1
 
-            # Assert overall success checkpoint
+            # Assert overall success checkpoint with resilient polling window
             if artifact.success_checkpoint:
-                if artifact.success_checkpoint.startswith("url_contains:"):
-                    exp_url = artifact.success_checkpoint[len("url_contains:"):].strip()
-                    if exp_url not in page.url:
-                        return ReplayResult(
-                            status="hard_failure",
-                            outcome_code="SUCCESS_CHECKPOINT_FAILED",
-                            expected=artifact.success_checkpoint,
-                            observed=f"Final URL: {page.url}",
-                            evidence_path=str(evidence_dir),
-                            message="Workflow finished but final success checkpoint was not met.",
-                        )
+                success_passed = False
+                start_poll = time.time()
+                while time.time() - start_poll < 4.0:
+                    if artifact.success_checkpoint.startswith("url_contains:"):
+                        exp_url = artifact.success_checkpoint[len("url_contains:"):].strip()
+                        if exp_url in page.url:
+                            success_passed = True
+                            break
+                    elif artifact.success_checkpoint.startswith("text_visible:"):
+                        exp_text = artifact.success_checkpoint[len("text_visible:"):].strip()
+                        body = await page.inner_text("body")
+                        if exp_text.lower() in body.lower():
+                            success_passed = True
+                            break
+                    await page.wait_for_timeout(250)
+
+                if not success_passed:
+                    return ReplayResult(
+                        status="hard_failure",
+                        outcome_code="SUCCESS_CHECKPOINT_FAILED",
+                        expected=artifact.success_checkpoint,
+                        observed=f"Final URL: {page.url}",
+                        evidence_path=str(evidence_dir),
+                        message="Workflow finished but final success checkpoint was not met.",
+                    )
 
             # Extract declared outputs
             for out in artifact.outputs:
